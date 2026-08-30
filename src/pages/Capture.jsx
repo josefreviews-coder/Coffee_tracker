@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { runOCR } from '../lib/ocr'
 import { supabase } from '../lib/supabaseClient'
 
@@ -6,6 +6,7 @@ export default function Capture(){
   const [file, setFile] = useState(null)
   const [ocrText, setOcrText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState(null)
   const [form, setForm] = useState({
     roastery: '',
     coffee_name: '',
@@ -20,7 +21,26 @@ export default function Capture(){
     rating: ''
   })
 
+  useEffect(() => {
+    let mounted = true
+    async function init(){
+      try{
+        const { data } = await supabase.auth.getUser()
+        if(mounted) setUser(data?.user ?? null)
+      }catch(e){
+        try{ const u = supabase.auth.user(); if(mounted) setUser(u) }catch(_){}
+      }
+      const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null)
+      })
+      return () => listener.subscription?.unsubscribe?.()
+    }
+    init()
+    return () => { mounted = false }
+  }, [])
+
   async function onFile(e){
+    if(!user){ alert('Please sign in to capture a photo'); return }
     const f = e.target.files[0]
     if(!f) return
     setFile(f)
@@ -126,9 +146,15 @@ export default function Capture(){
 
   return (
     <div className="space-y-4">
+      {!user && (
+        <div className="p-3 bg-yellow-50 border-l-4 border-yellow-300 text-sm text-yellow-800 rounded">
+          Please sign in (top-right) to capture and save photos — uploads are restricted to authenticated users.
+        </div>
+      )}
+
       <div>
         <label className="block text-sm font-medium">Photo</label>
-        <input type="file" accept="image/*" capture="environment" onChange={onFile} />
+        <input type="file" accept="image/*" capture="environment" onChange={onFile} disabled={!user} />
       </div>
 
       {loading && <div className="text-sm text-gray-500">Processing...</div>}
@@ -191,7 +217,9 @@ export default function Capture(){
         </div>
 
         <div className="pt-2">
-          <button onClick={onSave} className="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+          <button onClick={onSave} disabled={!user} className={`px-4 py-2 rounded ${user ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}>
+            {user ? 'Save' : 'Sign in to save'}
+          </button>
         </div>
       </div>
 
