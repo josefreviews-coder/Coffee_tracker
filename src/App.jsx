@@ -1,5 +1,6 @@
 import React from 'react'
 import { Outlet, Link } from 'react-router-dom'
+import Auth from './components/Auth'
 
 export default function App(){
   return (
