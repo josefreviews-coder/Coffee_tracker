@@ -29,7 +29,16 @@ export default function Dashboard(){
         {coffees.map(c => (
           <div key={c.id} className="bg-white p-3 rounded shadow-sm flex gap-3">
             {c.photo_path ? (
-              <img src={`${supabase.storage.from('coffee-images').getPublicUrl(c.photo_path).publicURL}`} alt="photo" className="w-24 h-24 object-cover rounded" />
+              (() => {
+                const pub = supabase.storage.from('coffee-images').getPublicUrl(c.photo_path)
+                // support different client versions: v1 returns { publicURL }, v2 returns { data: { publicUrl } }
+                const imgUrl = (pub && (pub.publicURL || pub.publicUrl || pub.data?.publicUrl || pub.data?.publicURL)) || ''
+                return imgUrl ? (
+                  <img src={imgUrl} alt="photo" className="w-24 h-24 object-cover rounded" />
+                ) : (
+                  <div className="w-24 h-24 bg-gray-100 rounded flex items-center justify-center text-xs">No image</div>
+                )
+              })()
             ) : (
               <div className="w-24 h-24 bg-gray-100 rounded" />
             )}
