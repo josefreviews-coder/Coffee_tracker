@@ -50,15 +50,38 @@ export default function Capture(){
         .upload(fileName, file, { cacheControl: '3600', upsert: false })
       if(uploadError) throw uploadError
       const photo_path = uploadData.path
+
+      // sanitize numeric and date fields so Postgres doesn't receive empty strings
+      const elevationValue = form.elevation_value === '' ? null : Number(form.elevation_value)
+      const ratingValue = form.rating === '' ? null : Number(form.rating)
+      const roastDate = form.roast_date ? form.roast_date : null
+      const openedDate = form.opened_date ? form.opened_date : null
+
+      const payload = {
+        roastery: form.roastery || null,
+        coffee_name: form.coffee_name || null,
+        origin: form.origin || null,
+        process: form.process || null,
+        varietal: form.varietal || null,
+        elevation_value: elevationValue,
+        elevation_unit: form.elevation_unit || null,
+        tasting_notes: form.tasting_notes || null,
+        roast_date: roastDate,
+        opened_date: openedDate,
+        rating: ratingValue,
+        photo_path,
+        ocr_raw_text: ocrText || null
+      }
+
       const { error: insertError } = await supabase
         .from('coffees')
-        .insert([{ ...form, photo_path, ocr_raw_text: ocrText }])
+        .insert([payload])
       if(insertError) throw insertError
       alert('Saved!')
       // reset
       setFile(null)
       setOcrText('')
-      setForm({ roastery:'', coffee_name:'', origin:'', elevation_value:'', elevation_unit:'m', tasting_notes:'', roast_date:'', opened_date:'', rating:'' })
+      setForm({ roastery:'', coffee_name:'', origin:'', process:'', varietal:'', elevation_value:'', elevation_unit:'m', tasting_notes:'', roast_date:'', opened_date:'', rating:'' })
     }catch(err){
       console.error(err)
       alert('Save failed — check console')
