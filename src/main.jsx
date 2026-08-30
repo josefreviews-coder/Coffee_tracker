@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
-          <Route index element={<Navigate to="/capture" replace />} />
+          <Route index element={<div className="p-4">Welcome — please sign in using the control in the header to access Capture and Dashboard.</div>} />
           <Route path="capture" element={<ProtectedRoute><Capture /></ProtectedRoute>} />
           <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         </Route>
