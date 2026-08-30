@@ -39,9 +39,15 @@ create table if not exists coffees (
   rating int,
   photo_path text,
   ocr_raw_text text,
+  process text,
+  varietal text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- If you already created the coffees table, run these ALTER statements to add the new columns:
+-- ALTER TABLE coffees ADD COLUMN process text;
+-- ALTER TABLE coffees ADD COLUMN varietal text;
 
 3. Create a storage bucket named "coffee-images" (public or private depending on preference). The code assumes a bucket named "coffee-images".
 
