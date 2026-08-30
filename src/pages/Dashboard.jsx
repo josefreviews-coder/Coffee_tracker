@@ -8,6 +8,21 @@ export default function Dashboard(){
   useEffect(()=>{
     async function load(){
       setLoading(true)
+      // get current user first; with RLS enabled the select will be scoped to the user
+      let user = null
+      try{
+        const { data } = await supabase.auth.getUser()
+        user = data?.user ?? null
+      }catch(e){
+        try{ user = supabase.auth.user() }catch(_){ user = null }
+      }
+
+      if(!user){
+        setCoffees([])
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('coffees')
         .select('*')

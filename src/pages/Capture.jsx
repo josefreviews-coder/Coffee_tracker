@@ -44,10 +44,23 @@ export default function Capture(){
     if(!file){ alert('Add a photo first'); return }
     setLoading(true)
     try{
+      // require signed-in user
+      let user = null
+      try{
+        const { data } = await supabase.auth.getUser()
+        user = data?.user ?? null
+      }catch(e){
+        // fallback for older versions
+        try{ user = supabase.auth.user() }catch(_){}
+      }
+      if(!user){ alert('Please sign in before saving'); setLoading(false); return }
+
       const fileName = `coffee-${Date.now()}.jpg`
+      // attach owner metadata so storage policies can enforce ownership
+      const metadata = { owner: user.id }
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('coffee-images')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false })
+        .upload(fileName, file, { cacheControl: '3600', upsert: false, metadata })
       if(uploadError) throw uploadError
       const photo_path = uploadData.path
 
@@ -70,7 +83,8 @@ export default function Capture(){
         opened_date: openedDate,
         rating: ratingValue,
         photo_path,
-        ocr_raw_text: ocrText || null
+        ocr_raw_text: ocrText || null,
+        user_id: user.id
       }
 
       const { error: insertError } = await supabase

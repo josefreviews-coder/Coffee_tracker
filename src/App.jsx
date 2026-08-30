@@ -7,9 +7,12 @@ export default function App(){
       <header className="bg-white shadow-sm">
         <div className="max-w-3xl mx-auto p-4 flex items-center gap-4">
           <h1 className="text-xl font-semibold">Coffee Catalog</h1>
-          <nav className="ml-auto flex gap-3">
+          <nav className="ml-auto flex gap-3 items-center">
             <Link to="/capture" className="text-sm text-blue-600">Capture</Link>
             <Link to="/dashboard" className="text-sm text-blue-600">Dashboard</Link>
+            <div className="ml-4">
+              <Auth />
+            </div>
           </nav>
         </div>
       </header>
